@@ -34,6 +34,3 @@
 [submodule "gst-orc"]
 	path = gst-orc
 	url = https://gitlab.freedesktop.org/gstreamer/orc.git
-[submodule "vkd3d-proton"]
-	path = vkd3d-proton
-	url = https://github.com/HansKristian-Work/vkd3d-proton
