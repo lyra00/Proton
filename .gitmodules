@@ -37,3 +37,6 @@
 [submodule "vkd3d-proton"]
 	path = vkd3d-proton
 	url = https://github.com/lyra00/vkd3d-proton.git
+[submodule "dxil-spirv"]
+	path = dxil-spirv
+	url = https://github.com/HansKristian-Work/dxil-spirv
