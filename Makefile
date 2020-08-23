@@ -150,6 +150,18 @@ vkd3d-proton: configure
 		cp $(BUILD_DIR)/dist/dist/lib/wine/vkd3d-proton/*.dll /vagrant/vkd3d-proton/lib/wine/vkd3d-proton/ && \
 		cp $(BUILD_DIR)/dist/dist/lib64/wine/vkd3d-proton/*.dll /vagrant/vkd3d-proton/lib64/wine/vkd3d-proton/'
 
+dxil-spirv: configure
+	mkdir -p vagrant_share/dxil-spirv/lib/
+	mkdir -p vagrant_share/dxil-spirv/lib64/
+	mkdir -p vagrant_share/dxil-spirv/bin/
+	vagrant ssh -c 'make -C $(BUILD_DIR)/ $(UNSTRIPPED) dxil_spirv && \
+		cp $(BUILD_DIR)/dist/dist/lib64/libdxil-spirv* /vagrant/dxil-spirv/lib64/ && \
+		cp $(BUILD_DIR)/dist/dist/lib/libdxil-spirv* /vagrant/dxil-spirv/lib/ && \
+		cp $(BUILD_DIR)/dist/dist/bin/dxil-spirv /vagrant/dxil-spirv/bin/ && \
+		cp $(BUILD_DIR)/dist/dist/bin/dxil-extract /vagrant/dxil-spirv/bin/ && \
+		cp $(BUILD_DIR)/dist/dist/bin/dxil-spirv32 /vagrant/dxil-spirv/bin/ && \
+		cp $(BUILD_DIR)/dist/dist/bin/dxil-extract32 /vagrant/dxil-spirv/bin/'
+		
 lsteamclient: configure
 	mkdir -p vagrant_share/lsteamclient/lib/wine
 	mkdir -p vagrant_share/lsteamclient/lib64/wine

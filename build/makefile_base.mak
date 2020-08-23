@@ -216,6 +216,10 @@ FAUDIO := $(SRCDIR)/FAudio
 FAUDIO_OBJ32 := ./obj-faudio32
 FAUDIO_OBJ64 := ./obj-faudio64
 
+DXIL_SPIRV := $(SRCDIR)/dxil-spirv
+DXIL_SPIRV_OBJ32 := ./obj-dxil-spirv32
+DXIL_SPIRV_OBJ64 := ./obj-dxil-spirv64
+
 LSTEAMCLIENT := $(SRCDIR)/lsteamclient
 LSTEAMCLIENT32 := ./syn-lsteamclient32/lsteamclient
 LSTEAMCLIENT64 := ./syn-lsteamclient64/lsteamclient
@@ -284,11 +288,12 @@ FONTS_OBJ := ./obj-fonts
 OBJ_DIRS := $(TOOLS_DIR32)        $(TOOLS_DIR64)        \
             $(FFMPEG_OBJ32)       $(FFMPEG_OBJ64)       \
             $(GLIB_OBJ32)         $(GLIB_OBJ64)         \
-            $(GST_ORC_OBJ32)      $(GST_ORC_OBJ64)       \
+            $(GST_ORC_OBJ32)      $(GST_ORC_OBJ64)      \
             $(GSTREAMER_OBJ32)    $(GSTREAMER_OBJ64)    \
             $(GST_BASE_OBJ32)     $(GST_BASE_OBJ64)     \
             $(GST_GOOD_OBJ32)     $(GST_GOOD_OBJ64)     \
             $(FAUDIO_OBJ32)       $(FAUDIO_OBJ64)       \
+            $(DXIL_SPIRV_OBJ32)    $(DXIL_SPIRV_OBJ64)    \
             $(LSTEAMCLIENT_OBJ32) $(LSTEAMCLIENT_OBJ64) \
             $(STEAMEXE_OBJ)                             \
             $(WINE_OBJ32)         $(WINE_OBJ64)         \
@@ -1673,6 +1678,63 @@ $(WINEWIDL64): SHELL = $(CONTAINER_SHELL64)
 $(WINEWIDL64): $(WINEWIDL_CONFIGURE_FILES64)
 	cd $(WINEWIDL_OBJ64) && \
 	make tools/widl
+
+##
+## DXIL_SPIRV
+##
+
+DXIL_SPIRV_CMAKE_FLAGS = -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_LIBDIR="lib"
+
+DXIL_SPIRV_TARGETS = dxil_spirv dxil_spirv32 dxil_spirv64
+
+ALL_TARGETS += $(DXIL_SPIRV_TARGETS)
+GOAL_TARGETS_LIBS += dxil_spirv
+
+.PHONY: dxil_spirv dxil_spirv32 dxil_spirv64
+
+dxil_spirv: dxil_spirv32 dxil_spirv64
+
+DXIL_SPIRV_CONFIGURE_FILES32 := $(DXIL_SPIRV_OBJ32)/Makefile
+DXIL_SPIRV_CONFIGURE_FILES64 := $(DXIL_SPIRV_OBJ64)/Makefile
+
+$(DXIL_SPIRV_CONFIGURE_FILES32): SHELL = $(CONTAINER_SHELL32)
+$(DXIL_SPIRV_CONFIGURE_FILES32): $(DXIL_SPIRV)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BIN32) | $(DXIL_SPIRV_OBJ32)
+	cd $(dir $@) && \
+		../$(CMAKE_BIN32) $(abspath $(DXIL_SPIRV)) \
+			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR32))" \
+			$(DXIL_SPIRV_CMAKE_FLAGS) \
+			-DCMAKE_C_FLAGS="-m32" -DCMAKE_CXX_FLAGS="-m32"
+
+$(DXIL_SPIRV_CONFIGURE_FILES64): SHELL = $(CONTAINER_SHELL64)
+$(DXIL_SPIRV_CONFIGURE_FILES64): $(DXIL_SPIRV)/CMakeLists.txt $(MAKEFILE_DEP) $(CMAKE_BIN64) | $(DXIL_SPIRV_OBJ64)
+	cd $(dir $@) && \
+		../$(CMAKE_BIN64) $(abspath $(DXIL_SPIRV)) \
+			-DCMAKE_INSTALL_PREFIX="$(abspath $(TOOLS_DIR64))" \
+			$(DXIL_SPIRV_CMAKE_FLAGS)
+
+dxil_spirv32: SHELL = $(CONTAINER_SHELL32)
+dxil_spirv32: $(DXIL_SPIRV_CONFIGURE_FILES32)
+	+$(MAKE) -C $(DXIL_SPIRV_OBJ32) VERBOSE=1
+	+$(MAKE) -C $(DXIL_SPIRV_OBJ32) install VERBOSE=1
+	mkdir -p $(DST_DIR)/lib
+	cp -a $(TOOLS_DIR32)/lib/libdxil-spirv* $(DST_DIR)/lib/
+	[ x"$(STRIP)" = x ] || $(STRIP) $(DST_DIR)/lib/libdxil-spirv*.so
+	cp -a $(TOOLS_DIR32)/lib/dxil-extract $(DST_DIR)/bin/dxil-extract32
+	[ x"$(STRIP)" = x ] || VKD3D_CONFIGURE_FILES32$(STRIP) $(DST_DIR)/bin/dxil-extract32
+	cp -a $(TOOLS_DIR32)/lib/dxil-spirv $(DST_DIR)/bin/dxil-spirv32
+	[ x"$(STRIP)" = x ] || $(STRIP) $(DST_DIR)/bin/dxil-spirv32
+
+dxil_spirv64: SHELL = $(CONTAINER_SHELL64)
+dxil_spirv64: $(DXIL_SPIRV_CONFIGURE_FILES64)
+	+$(MAKE) -C $(DXIL_SPIRV_OBJ64) VERBOSE=1
+	+$(MAKE) -C $(DXIL_SPIRV_OBJ64) install VERBOSE=1
+	mkdir -p $(DST_DIR)/lib64
+	cp -a $(TOOLS_DIR64)/lib/libdxil-spirv* $(DST_DIR)/lib64/
+	[ x"$(STRIP)" = x ] || $(STRIP) $(DST_DIR)/lib64/libdxil-spirv*.so
+	cp -a $(TOOLS_DIR64)/lib/dxil-extract $(DST_DIR)/bin/
+	[ x"$(STRIP)" = x ] || $(STRIP) $(DST_DIR)/bin/dxil-extract
+	cp -a $(TOOLS_DIR64)/lib/dxil-spirv $(DST_DIR)/bin/
+	[ x"$(STRIP)" = x ] || $(STRIP) $(DST_DIR)/bin/dxil-spirv
 
 # VKD3D
 
